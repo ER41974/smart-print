@@ -1,0 +1,117 @@
+<Window x:Class="SmartPrint.App.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:SmartPrint.App"
+        xmlns:helpers="clr-namespace:SmartPrint.App.Helpers"
+        xmlns:converters="clr-namespace:SmartPrint.App.Converters"
+        xmlns:resx="clr-namespace:SmartPrint.Core.Resources;assembly=SmartPrint.Core"
+        xmlns:models="clr-namespace:SmartPrint.Core.Models;assembly=SmartPrint.Core"
+        mc:Ignorable="d"
+        Title="{x:Static resx:Strings.AppTitle}" Height="600" Width="1000"
+        AllowDrop="True" Drop="Window_Drop">
+    <Window.Resources>
+        <converters:EnumToLocalizedStringConverter x:Key="EnumConverter"/>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- Toolbar -->
+        <ToolBarTray Grid.Row="0">
+            <ToolBar>
+                <Button Command="{Binding AddFilesCommand}" Content="{x:Static resx:Strings.AddFiles}"/>
+                <Separator/>
+                <Button Command="{Binding ApplyAllSettingsToSelectionCommand}" CommandParameter="{Binding ElementName=QueueGrid, Path=SelectedItems}" Content="{x:Static resx:Strings.Apply}"/>
+                <Button Command="{Binding ResetDefaultsCommand}" CommandParameter="{Binding ElementName=QueueGrid, Path=SelectedItems}" Content="{x:Static resx:Strings.Default}"/>
+                <Separator/>
+                <Button Command="{Binding RemoveJobCommand}" CommandParameter="{Binding SelectedJob}" Content="{x:Static resx:Strings.Remove}"/>
+                <Button Command="{Binding ClearQueueCommand}" Content="{x:Static resx:Strings.ClearQueue}"/>
+                <Separator/>
+                <Button Click="OpenSettings_Click" Content="{x:Static resx:Strings.Settings}"/>
+            </ToolBar>
+        </ToolBarTray>
+
+        <!-- Queue -->
+        <DataGrid x:Name="QueueGrid" Grid.Row="1" ItemsSource="{Binding Queue}" AutoGenerateColumns="False"
+                  SelectedItem="{Binding SelectedJob}" CanUserAddRows="False">
+            <DataGrid.ContextMenu>
+                <ContextMenu>
+                    <MenuItem Header="{x:Static resx:Strings.Apply}" Command="{Binding ApplyAllSettingsToSelectionCommand}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+                    <MenuItem Header="{x:Static resx:Strings.Default}" Command="{Binding ResetDefaultsCommand}" CommandParameter="{Binding PlacementTarget.SelectedItems, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+                    <Separator/>
+                    <MenuItem Header="{x:Static resx:Strings.Remove}" Command="{Binding RemoveJobCommand}" CommandParameter="{Binding PlacementTarget.SelectedItem, RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type ContextMenu}}}"/>
+                </ContextMenu>
+            </DataGrid.ContextMenu>
+
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="File" Binding="{Binding FileName}" IsReadOnly="True" Width="200"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type, Converter={StaticResource EnumConverter}}" IsReadOnly="True" Width="80"/>
+
+                <!-- Printer Selection -->
+                <DataGridTemplateColumn Header="{x:Static resx:Strings.Printer}" Width="200">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding DataContext.Printers, RelativeSource={RelativeSource AncestorType=Window}}"
+                                      SelectedValue="{Binding SelectedPrinterName}"
+                                      SelectedValuePath="Name"
+                                      DisplayMemberPath="Name"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Copies -->
+                <DataGridTemplateColumn Header="{x:Static resx:Strings.Copies}" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <TextBox Text="{Binding Copies}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Color -->
+                <DataGridTemplateColumn Header="{x:Static resx:Strings.Color}" Width="80">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <CheckBox IsChecked="{Binding IsColor}" Content="{x:Static resx:Strings.Color}"/>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <!-- Quality -->
+                <DataGridTemplateColumn Header="{x:Static resx:Strings.Quality}" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding Source={helpers:EnumBindingSource {x:Type models:PrintQuality}}}"
+                                      SelectedItem="{Binding Quality}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource EnumConverter}}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
+                <DataGridTextColumn Header="{x:Static resx:Strings.Status}" Binding="{Binding Status, Converter={StaticResource EnumConverter}}" IsReadOnly="True" Width="100"/>
+                <DataGridTextColumn Header="Message" Binding="{Binding StatusMessage}" IsReadOnly="True" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <!-- Status Bar / Actions -->
+        <StatusBar Grid.Row="2">
+            <StatusBarItem>
+                <TextBlock Text="{Binding Queue.Count, StringFormat='Count: {0}'}"/>
+            </StatusBarItem>
+            <StatusBarItem HorizontalAlignment="Right">
+                <Button Command="{Binding PrintAllCommand}" Content="{x:Static resx:Strings.Print}" Padding="10,2"/>
+            </StatusBarItem>
+        </StatusBar>
+    </Grid>
+</Window>
