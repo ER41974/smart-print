@@ -131,63 +131,178 @@ public class PrintEngine : IPrintEngine
     {
         await Task.Run(() =>
         {
-            dynamic app = null;
-            try
+            string ext = Path.GetExtension(job.FilePath).ToLowerInvariant();
+            if (ext == ".docx" || ext == ".doc")
             {
-                string ext = Path.GetExtension(job.FilePath).ToLowerInvariant();
-                string progId = ext switch
-                {
-                    ".docx" or ".doc" => "Word.Application",
-                    ".xlsx" or ".xls" => "Excel.Application",
-                    ".pptx" or ".ppt" => "PowerPoint.Application",
-                    _ => null
-                };
-
-                if (progId == null) throw new NotSupportedException("Unknown Office format.");
-
-                Type officeType = Type.GetTypeFromProgID(progId);
-                if (officeType == null) throw new NotSupportedException("Office not installed.");
-
-                app = Activator.CreateInstance(officeType);
-                app.Visible = false;
-
-                if (progId.Contains("Word"))
-                {
-                    dynamic doc = app.Documents.Open(job.FilePath, ReadOnly: true, Visible: false);
-                    app.ActivePrinter = job.SelectedPrinterName;
-
-                    // Wait for background print to finish or disable it
-                    doc.PrintOut(Background: false);
-
-                    doc.Close(SaveChanges: false);
-                }
-                else if (progId.Contains("Excel"))
-                {
-                    dynamic wb = app.Workbooks.Open(job.FilePath, ReadOnly: true);
-                    // app.ActivePrinter = ...; // Skip for now
-                    wb.PrintOut();
-                    wb.Close(SaveChanges: false);
-                }
-                else if (progId.Contains("PowerPoint"))
-                {
-                    dynamic pres = app.Presentations.Open(job.FilePath, ReadOnly: -1 /*msoTrue*/, Untitled: 0 /*msoFalse*/, WithWindow: 0 /*msoFalse*/);
-                    pres.PrintOptions.ActivePrinter = job.SelectedPrinterName;
-                    pres.PrintOut();
-                    pres.Close();
-                }
+                PrintWord(job);
             }
-            catch (Exception ex)
+            else
             {
-                throw new Exception($"Office Print Error: {ex.Message}", ex);
-            }
-            finally
-            {
-                if (app != null)
-                {
-                    try { app.Quit(); } catch {}
-                    try { System.Runtime.InteropServices.Marshal.ReleaseComObject(app); } catch {}
-                }
+                // Fallback for others or implement similar logic later
+                PrintLegacyOffice(job);
             }
         });
+    }
+
+    private void PrintWord(PrintJob job)
+    {
+        dynamic wordApp = null;
+        dynamic originalPrinter = null;
+        dynamic doc = null;
+
+        try
+        {
+            Type wordType = Type.GetTypeFromProgID("Word.Application");
+            if (wordType == null)
+            {
+                throw new NotSupportedException(SmartPrint.Core.Resources.Strings.OfficeNotInstalled);
+            }
+
+            wordApp = Activator.CreateInstance(wordType);
+            wordApp.Visible = false;
+            // wordApp.ScreenUpdating = false; // Optional, might improve performance
+
+            // Store original printer to restore later (good practice)
+            try { originalPrinter = wordApp.ActivePrinter; } catch { }
+
+            // Set printer BEFORE opening document if possible, or try setting it on the app
+            // Note: Setting ActivePrinter changes the system default in some Word versions.
+            // Safe approach: rely on PrintOut arguments if supported, or set active printer carefully.
+            try
+            {
+                wordApp.ActivePrinter = job.SelectedPrinterName;
+            }
+            catch
+            {
+                // If setting printer fails, maybe it's invalid or Word blocks it.
+                // We proceed hoping default is okay or user accepts it.
+                // But typically this is required.
+            }
+
+            // Open document
+            // ReadOnly: true, Visible: false, AddToRecentFiles: false
+            doc = wordApp.Documents.Open(
+                FileName: job.FilePath,
+                ConfirmConversions: false,
+                ReadOnly: true,
+                AddToRecentFiles: false,
+                PasswordDocument: "",
+                PasswordTemplate: "",
+                Revert: false,
+                WritePasswordDocument: "",
+                WritePasswordTemplate: "",
+                Format: 0, // wdOpenFormatAuto
+                Encoding: 0,
+                Visible: false
+            );
+
+            // Double check printer if we can
+            // doc.ActiveWindow... NO! Do not use ActiveWindow.
+
+            // Print
+            // Background: false IS CRITICAL to wait for completion
+            doc.PrintOut(
+                Background: false,
+                Append: false,
+                Range: 0, // wdPrintAllDocument
+                Item: 0, // wdPrintDocumentContent
+                Copies: job.Copies,
+                PageType: 0, // wdPrintAllPages
+                PrintToFile: false,
+                Collate: true,
+                ManualDuplexPrint: false
+            );
+        }
+        catch (Exception ex)
+        {
+            throw new Exception(string.Format(SmartPrint.Core.Resources.Strings.WordPrintFailed, ex.Message), ex);
+        }
+        finally
+        {
+            // Close document
+            if (doc != null)
+            {
+                try
+                {
+                    // wdDoNotSaveChanges = 0
+                    doc.Close(SaveChanges: 0);
+                }
+                catch { }
+                try { System.Runtime.InteropServices.Marshal.FinalReleaseComObject(doc); } catch { }
+            }
+
+            // Restore printer (optional)
+            if (wordApp != null && originalPrinter != null)
+            {
+                try { wordApp.ActivePrinter = originalPrinter; } catch { }
+            }
+
+            // Quit Word
+            if (wordApp != null)
+            {
+                try
+                {
+                    // wdDoNotSaveChanges = 0
+                    wordApp.Quit(SaveChanges: 0);
+                }
+                catch { }
+                try { System.Runtime.InteropServices.Marshal.FinalReleaseComObject(wordApp); } catch { }
+            }
+
+            doc = null;
+            wordApp = null;
+            GC.Collect();
+            GC.WaitForPendingFinalizers();
+        }
+    }
+
+    private void PrintLegacyOffice(PrintJob job)
+    {
+         dynamic app = null;
+         try
+         {
+             string ext = Path.GetExtension(job.FilePath).ToLowerInvariant();
+             string progId = ext switch
+             {
+                 ".xlsx" or ".xls" => "Excel.Application",
+                 ".pptx" or ".ppt" => "PowerPoint.Application",
+                 _ => null
+             };
+
+             if (progId == null) throw new NotSupportedException(SmartPrint.Core.Resources.Strings.Unsupported);
+
+             Type officeType = Type.GetTypeFromProgID(progId);
+             if (officeType == null) throw new NotSupportedException(SmartPrint.Core.Resources.Strings.OfficeNotInstalled);
+
+             app = Activator.CreateInstance(officeType);
+             app.Visible = false;
+
+             if (progId.Contains("Excel"))
+             {
+                 dynamic wb = app.Workbooks.Open(job.FilePath, ReadOnly: true);
+                 wb.PrintOut();
+                 wb.Close(SaveChanges: false);
+             }
+             else if (progId.Contains("PowerPoint"))
+             {
+                 // ReadOnly: -1 (msoTrue), WithWindow: 0 (msoFalse)
+                 dynamic pres = app.Presentations.Open(job.FilePath, ReadOnly: -1, Untitled: 0, WithWindow: 0);
+                 pres.PrintOptions.ActivePrinter = job.SelectedPrinterName;
+                 pres.PrintOut();
+                 pres.Close();
+             }
+         }
+         catch (Exception ex)
+         {
+             throw new Exception($"Legacy Office Print Error: {ex.Message}", ex);
+         }
+         finally
+         {
+             if (app != null)
+             {
+                 try { app.Quit(); } catch {}
+                 try { System.Runtime.InteropServices.Marshal.ReleaseComObject(app); } catch {}
+             }
+         }
     }
 }

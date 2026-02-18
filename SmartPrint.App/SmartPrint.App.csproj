@@ -8,10 +8,17 @@
     <UseWPF>true</UseWPF>
     <!-- UseWindowsForms removed to prevent namespace ambiguity -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <ApplicationIcon>assets\SmartPrint.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\SmartPrint.Core\SmartPrint.Core.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="assets\SmartPrint.ico">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>

@@ -10,7 +10,8 @@
         xmlns:models="clr-namespace:SmartPrint.Core.Models;assembly=SmartPrint.Core"
         mc:Ignorable="d"
         Title="{x:Static resx:Strings.AppTitle}" Height="600" Width="1000"
-        AllowDrop="True" Drop="Window_Drop">
+        AllowDrop="True" Drop="Window_Drop"
+        Icon="pack://application:,,,/assets/SmartPrint.ico">
     <Window.Resources>
         <converters:EnumToLocalizedStringConverter x:Key="EnumConverter"/>
     </Window.Resources>
