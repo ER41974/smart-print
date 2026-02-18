@@ -39,4 +39,7 @@ public class Strings
     public static string Error => Get("Error");
     public static string OpenLocation => Get("OpenLocation");
     public static string Unsupported => Get("Unsupported");
+    public static string WordPrintFailed => Get("WordPrintFailed");
+    public static string WordPrintSuggestion => Get("WordPrintSuggestion");
+    public static string OfficeNotInstalled => Get("OfficeNotInstalled");
 }
