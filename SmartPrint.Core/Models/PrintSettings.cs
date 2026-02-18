@@ -18,4 +18,7 @@ public partial class PrintSettings : ObservableObject
 
     [ObservableProperty]
     private string language = "en";
+
+    [ObservableProperty]
+    private double uiScale = 1.0;
 }

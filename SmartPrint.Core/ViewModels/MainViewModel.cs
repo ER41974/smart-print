@@ -25,6 +25,8 @@ public partial class MainViewModel : ObservableObject
 
     public ObservableCollection<PrintJob> Queue => _queueService.Queue;
 
+    public PrintSettings Settings => _settingsService.Settings;
+
     public MainViewModel(
         IQueueService queueService,
         IPrinterService printerService,

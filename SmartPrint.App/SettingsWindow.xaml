@@ -22,6 +22,10 @@
         <!-- Default Color -->
         <CheckBox IsChecked="{Binding TempSettings.DefaultColor}" Content="{x:Static resx:Strings.Color}" Margin="0,5,0,15"/>
 
+        <!-- UI Scale -->
+        <TextBlock Text="UI Scale"/>
+        <ComboBox ItemsSource="{Binding UiScales}" SelectedItem="{Binding TempSettings.UiScale}" Margin="0,5,0,15"/>
+
         <!-- Buttons -->
         <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,20,0,0">
             <Button Command="{Binding SaveCommand}" Content="{x:Static resx:Strings.Apply}" Width="80" Margin="0,0,10,0" IsDefault="True"/>

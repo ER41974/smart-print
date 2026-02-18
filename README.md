@@ -13,6 +13,7 @@
     *   Color / B&W selection
     *   Print quality
     *   Target printer
+*   **UI Customization**: Adjustable UI scale (100% - 150%) for better readability.
 *   **Multi-Printer Support**: Select different printers for different documents in the batch.
 *   **Localization**: French (FR) and English (EN) language selection.
 

@@ -7,6 +7,15 @@
             <ResourceDictionary.MergedDictionaries>
                  <!-- Add styles if any -->
             </ResourceDictionary.MergedDictionaries>
+            
+            <Style TargetType="Window">
+                <Setter Property="FontSize" Value="14"/>
+            </Style>
+            
+            <Style TargetType="DataGrid">
+                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="RowHeight" Value="30"/>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -31,6 +31,8 @@ public partial class SettingsViewModel : ObservableObject
         new LanguageItem { Code = "fr", Name = "Français" }
     };
 
+    public List<double> UiScales { get; } = new() { 1.0, 1.1, 1.25, 1.5 };
+
     public SettingsViewModel(ISettingsService settingsService, ILocalizationService localizationService, IPrinterService printerService)
     {
         _settingsService = settingsService;
@@ -44,7 +46,8 @@ public partial class SettingsViewModel : ObservableObject
             DefaultCopies = current.DefaultCopies,
             DefaultColor = current.DefaultColor,
             DefaultQuality = current.DefaultQuality,
-            Language = current.Language
+            Language = current.Language,
+            UiScale = current.UiScale
         };
 
         LoadPrinters();
@@ -65,6 +68,7 @@ public partial class SettingsViewModel : ObservableObject
         current.DefaultColor = TempSettings.DefaultColor;
         current.DefaultQuality = TempSettings.DefaultQuality;
         current.Language = TempSettings.Language;
+        current.UiScale = TempSettings.UiScale;
 
         _settingsService.Save();
         _localizationService.SetLanguage(current.Language);

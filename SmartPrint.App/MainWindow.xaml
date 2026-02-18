@@ -16,6 +16,9 @@
     </Window.Resources>
 
     <Grid>
+        <Grid.LayoutTransform>
+            <ScaleTransform ScaleX="{Binding Settings.UiScale}" ScaleY="{Binding Settings.UiScale}"/>
+        </Grid.LayoutTransform>
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
