@@ -4,6 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:SmartPrint.App"
+        xmlns:helpers="clr-namespace:SmartPrint.App.Helpers"
         xmlns:converters="clr-namespace:SmartPrint.App.Converters"
         xmlns:resx="clr-namespace:SmartPrint.Core.Resources;assembly=SmartPrint.Core"
         xmlns:models="clr-namespace:SmartPrint.Core.Models;assembly=SmartPrint.Core"
@@ -86,7 +87,7 @@
                 <DataGridTemplateColumn Header="{x:Static resx:Strings.Quality}" Width="100">
                     <DataGridTemplateColumn.CellTemplate>
                         <DataTemplate>
-                            <ComboBox ItemsSource="{Binding Source={local:EnumBindingSource {x:Type models:PrintQuality}}}"
+                            <ComboBox ItemsSource="{Binding Source={helpers:EnumBindingSource {x:Type models:PrintQuality}}}"
                                       SelectedItem="{Binding Quality}">
                                 <ComboBox.ItemTemplate>
                                     <DataTemplate>

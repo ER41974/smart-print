@@ -26,12 +26,16 @@ public class DialogService : IDialogService
 
     public Task<string> OpenFolderAsync()
     {
-        using var dlg = new System.Windows.Forms.FolderBrowserDialog();
-        // Requires UseWindowsForms=true in csproj
-        var result = dlg.ShowDialog();
-        if (result == System.Windows.Forms.DialogResult.OK && !string.IsNullOrWhiteSpace(dlg.SelectedPath))
+        // Microsoft.Win32.OpenFolderDialog is available in .NET 8 for WPF
+        var dlg = new OpenFolderDialog
         {
-            return Task.FromResult(dlg.SelectedPath);
+            Title = "Select Folder",
+            Multiselect = false
+        };
+
+        if (dlg.ShowDialog() == true)
+        {
+            return Task.FromResult(dlg.FolderName);
         }
         return Task.FromResult(string.Empty);
     }
