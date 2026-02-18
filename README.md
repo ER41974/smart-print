@@ -1,31 +1,29 @@
 # Smart Print
 
-A fast queue ("tray/bac") for printing with per-document options.
+**Smart Print** is a Windows batch printing application built with WPF and .NET 8 LTS. It serves as a free, local alternative to commercial tools like Print Conductor.
 
-## Features
-- **Drag & Drop** files/folders into the queue.
-- **Per-Document Settings**: Copies, Color/BW, Quality, Printer.
-- **Bulk Edit**: Apply settings to multiple files at once.
-- **Multi-Language**: English and French (Français).
-- **Supported Formats**:
-  - PDF
-  - Images (PNG, JPG, JPEG, TIFF)
-  - Office (DOCX, XLSX, PPTX) *Requires Microsoft Office installed*
+> **OFFICIAL REFERENCE DOCUMENT**
+> This README.md is an official reference document. All discussions, features, and changes must align with it.
 
-## Build & Run
-### Prerequisites
-- .NET 8 SDK
-- Windows 10/11 (for WPF and Printing APIs)
+## Key Features
 
-### Instructions
-1. Clone the repository.
-2. Open `SmartPrint.sln` in Visual Studio 2022.
-3. Build and Run `SmartPrint.App`.
+*   **Batch Printing**: Drag and drop support for printing multiple files at once.
+*   **Per-Document Settings**: Individual control over:
+    *   Number of copies
+    *   Color / B&W selection
+    *   Print quality
+    *   Target printer
+*   **Multi-Printer Support**: Select different printers for different documents in the batch.
+*   **Localization**: French (FR) and English (EN) language selection.
 
-## Localization
-Go to Settings -> Language to switch between English and Français.
-The app may need a restart to fully apply the language change.
+## Technology Stack
 
-## Driver Limitations
-- **Color/BW**: Only available if the printer driver exposes this capability via standard Windows APIs.
-- **Quality**: Only Draft/Normal/High if supported. Otherwise "Default".
+*   **.NET 8 LTS**: The project strictly targets the Long Term Support version of .NET for stability.
+*   **WPF**: Windows Presentation Foundation for the desktop UI.
+*   **GitHub Actions CI**: Automated build and verification pipeline.
+
+## Project Status
+
+**Status**: MVP / In Active Development
+
+The project is currently in the MVP phase, focusing on core stability and essential features.
