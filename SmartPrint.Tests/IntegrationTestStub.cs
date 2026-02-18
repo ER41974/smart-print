@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Xunit;
 using Moq;
 using SmartPrint.Core.Models;
-using SmartPrint.App.Services;
 using SmartPrint.Core.Interfaces;
 
 namespace SmartPrint.Tests;
