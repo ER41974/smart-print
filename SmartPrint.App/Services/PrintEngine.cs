@@ -159,28 +159,31 @@ public class PrintEngine : IPrintEngine
             }
 
             wordApp = Activator.CreateInstance(wordType);
-            wordApp.Visible = false;
-            // wordApp.ScreenUpdating = false; // Optional, might improve performance
+            
+            // Refined Strategy: Visible=true, Minimize, DisplayAlerts=0
+            wordApp.Visible = true;
+            try { wordApp.WindowState = 2; } catch { } // wdWindowStateMinimize = 2
+            try { wordApp.DisplayAlerts = 0; } catch { } // wdAlertsNone = 0
 
             // Store original printer to restore later (good practice)
             try { originalPrinter = wordApp.ActivePrinter; } catch { }
 
             // Set printer BEFORE opening document if possible, or try setting it on the app
             // Note: Setting ActivePrinter changes the system default in some Word versions.
-            // Safe approach: rely on PrintOut arguments if supported, or set active printer carefully.
+            bool printerSet = false;
             try
             {
                 wordApp.ActivePrinter = job.SelectedPrinterName;
+                printerSet = true;
             }
             catch
             {
-                // If setting printer fails, maybe it's invalid or Word blocks it.
-                // We proceed hoping default is okay or user accepts it.
-                // But typically this is required.
+                // Fallback to default, but we should warn or just proceed if user accepts default.
+                // For now, we proceed as the job has a selected printer which might match default.
             }
 
             // Open document
-            // ReadOnly: true, Visible: false, AddToRecentFiles: false
+            // ReadOnly: true, Visible: true (since app is visible), AddToRecentFiles: false
             doc = wordApp.Documents.Open(
                 FileName: job.FilePath,
                 ConfirmConversions: false,
@@ -193,11 +196,14 @@ public class PrintEngine : IPrintEngine
                 WritePasswordTemplate: "",
                 Format: 0, // wdOpenFormatAuto
                 Encoding: 0,
-                Visible: false
+                Visible: true
             );
 
-            // Double check printer if we can
-            // doc.ActiveWindow... NO! Do not use ActiveWindow.
+            // Activate to ensure it's the active window for printing focus
+            try { doc.Activate(); } catch { }
+            
+            // Short delay for stability
+            System.Threading.Thread.Sleep(500);
 
             // Print
             // Background: false IS CRITICAL to wait for completion
@@ -215,10 +221,20 @@ public class PrintEngine : IPrintEngine
         }
         catch (Exception ex)
         {
-            throw new Exception(string.Format(SmartPrint.Core.Resources.Strings.WordPrintFailed, ex.Message), ex);
+            string suggestion = SmartPrint.Core.Resources.Strings.WordPrintSuggestion;
+            string printerName = job.SelectedPrinterName ?? "Default";
+            string fileName = Path.GetFileName(job.FilePath);
+            string message = string.Format(SmartPrint.Core.Resources.Strings.WordPrintFailed, $"{ex.Message} (File: {fileName}, Printer: {printerName}). {suggestion}");
+            throw new Exception(message, ex);
         }
         finally
         {
+            // Reset alerts
+            if (wordApp != null)
+            {
+                 try { wordApp.DisplayAlerts = -1; } catch { } // wdAlertsAll = -1
+            }
+
             // Close document
             if (doc != null)
             {

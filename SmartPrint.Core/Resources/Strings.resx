@@ -126,5 +126,6 @@
   <data name="PrintJobStatus_Completed" xml:space="preserve"><value>Completed</value></data>
   <data name="PrintJobStatus_Error" xml:space="preserve"><value>Error</value></data>
   <data name="WordPrintFailed" xml:space="preserve"><value>Word printing failed: {0}</value></data>
+  <data name="WordPrintSuggestion" xml:space="preserve"><value>Please check that Microsoft Word is installed and no dialog boxes are open.</value></data>
   <data name="OfficeNotInstalled" xml:space="preserve"><value>Microsoft Office is not installed or not detected.</value></data>
 </root>

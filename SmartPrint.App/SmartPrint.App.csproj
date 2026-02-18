@@ -8,7 +8,7 @@
     <UseWPF>true</UseWPF>
     <!-- UseWindowsForms removed to prevent namespace ambiguity -->
     <EnableWindowsTargeting>true</EnableWindowsTargeting>
-    <ApplicationIcon>assets\SmartPrint.ico</ApplicationIcon>
+    <ApplicationIcon>assets\icon\SmartPrint.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
@@ -16,7 +16,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Content Include="assets\SmartPrint.ico">
+    <Content Include="assets\icon\SmartPrint.ico">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

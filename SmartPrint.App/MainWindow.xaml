@@ -11,7 +11,7 @@
         mc:Ignorable="d"
         Title="{x:Static resx:Strings.AppTitle}" Height="600" Width="1000"
         AllowDrop="True" Drop="Window_Drop"
-        Icon="pack://application:,,,/assets/SmartPrint.ico">
+        Icon="pack://application:,,,/assets/icon/SmartPrint.ico">
     <Window.Resources>
         <converters:EnumToLocalizedStringConverter x:Key="EnumConverter"/>
     </Window.Resources>

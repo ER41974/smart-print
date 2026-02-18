@@ -37,7 +37,7 @@ public class SettingsService : ISettingsService
                     _settings.DefaultColor = settings.DefaultColor;
                     _settings.DefaultQuality = settings.DefaultQuality;
                     _settings.Language = settings.Language;
-                    _settings.UiScale = settings.UiScale != 0 ? settings.UiScale : 1.0;
+                    _settings.UiScale = settings.UiScale != 0 ? settings.UiScale : 1.25;
                 }
             }
             catch (Exception)

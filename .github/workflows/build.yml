@@ -30,13 +30,10 @@ jobs:
       run: dotnet test --no-build --verbosity normal --configuration Release
 
     - name: Publish
-      run: dotnet publish SmartPrint.App/SmartPrint.App.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o out
-
-    - name: Zip Artifact
-      run: Compress-Archive -Path out/* -DestinationPath SmartPrint-win-x64.zip
+      run: dotnet publish SmartPrint.App/SmartPrint.App.csproj -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true -o SmartPrint-win-x64
 
     - name: Upload Artifact
       uses: actions/upload-artifact@v4
       with:
         name: SmartPrint-win-x64
-        path: SmartPrint-win-x64.zip
+        path: SmartPrint-win-x64/
