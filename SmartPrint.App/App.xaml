@@ -9,12 +9,25 @@
             </ResourceDictionary.MergedDictionaries>
             
             <Style TargetType="Window">
-                <Setter Property="FontSize" Value="14"/>
+                <Setter Property="FontSize" Value="15"/>
             </Style>
             
             <Style TargetType="DataGrid">
-                <Setter Property="FontSize" Value="14"/>
-                <Setter Property="RowHeight" Value="30"/>
+                <Setter Property="FontSize" Value="15"/>
+                <Setter Property="RowHeight" Value="32"/>
+            </Style>
+            
+            <Style TargetType="DataGridCell">
+                <Setter Property="Padding" Value="5"/>
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="DataGridCell">
+                            <Border Padding="{TemplateBinding Padding}" BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}" Background="{TemplateBinding Background}" SnapsToDevicePixels="True">
+                                <ContentPresenter SnapsToDevicePixels="{TemplateBinding SnapsToDevicePixels}"/>
+                            </Border>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
             </Style>
         </ResourceDictionary>
     </Application.Resources>
