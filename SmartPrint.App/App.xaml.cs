@@ -48,6 +48,14 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
+        this.DispatcherUnhandledException += (s, args) =>
+        {
+            MessageBox.Show($"An unhandled exception occurred: {args.Exception.Message}\n\n{args.Exception.StackTrace}",
+                "Critical Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            args.Handled = true;
+            Current.Shutdown();
+        };
+
         var settings = Services.GetRequiredService<ISettingsService>();
         settings.Load();
 
