@@ -30,8 +30,9 @@
   </ItemGroup>
 
   <!-- Force copy of pdfium.dll to root output directory for compatibility -->
-  <Target Name="CopyPdfiumToRoot" AfterTargets="Build">
+  <Target Name="CopyPdfiumNative" AfterTargets="Build;Publish">
     <Copy SourceFiles="$(TargetDir)x64\pdfium.dll" DestinationFolder="$(TargetDir)" Condition="Exists('$(TargetDir)x64\pdfium.dll')" />
+    <Copy SourceFiles="$(PublishDir)x64\pdfium.dll" DestinationFolder="$(PublishDir)" Condition="Exists('$(PublishDir)x64\pdfium.dll')" />
   </Target>
 
 </Project>
