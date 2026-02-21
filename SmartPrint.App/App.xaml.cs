@@ -16,8 +16,24 @@ public partial class App : Application
 
     public App()
     {
-        Services = ConfigureServices();
-        // InitializeComponent(); // Not strictly needed if no InitializeComponent method generated or if using OnStartup
+        // Catch exceptions that happen before OnStartup
+        AppDomain.CurrentDomain.UnhandledException += (s, args) =>
+        {
+            MessageBox.Show($"A critical error occurred: {((Exception)args.ExceptionObject).Message}\n\nStack Trace:\n{((Exception)args.ExceptionObject).StackTrace}",
+                "Critical Startup Error", MessageBoxButton.OK, MessageBoxImage.Error);
+        };
+
+        InitializeComponent();
+
+        try
+        {
+            Services = ConfigureServices();
+        }
+        catch (Exception ex)
+        {
+            MessageBox.Show($"Failed to configure services: {ex.Message}", "Configuration Error", MessageBoxButton.OK, MessageBoxImage.Error);
+            Shutdown();
+        }
     }
 
     private static IServiceProvider ConfigureServices()
