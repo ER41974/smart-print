@@ -102,6 +102,11 @@ public class PrintEngine : IPrintEngine
                 pd.DefaultPageSettings.Color = job.IsColor;
                 pd.DefaultPageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
 
+                pd.QueryPageSettings += (s, e) =>
+                {
+                    e.PageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
+                };
+
                 using var img = Image.FromFile(job.FilePath);
 
                 pd.PrintPage += (s, e) =>
