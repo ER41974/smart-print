@@ -1,11 +1,24 @@
 using System;
-using System.Drawing;
 using System.Drawing.Printing;
 using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Printing;
+using System.Windows.Controls;
+using System.Windows.Documents;
+using System.Windows.Markup;
+using System.Windows.Media;
+using System.Windows.Media.Imaging;
+using System.Windows.Xps;
 using PdfiumViewer;
 using SmartPrint.Core.Interfaces;
 using SmartPrint.Core.Models;
+
+// Resolve ambiguity for Image
+using NativeImage = System.Drawing.Image;
+using WpfImage = System.Windows.Controls.Image;
+// Resolve ambiguity for PrintJobStatus (conflicts with System.Printing.PrintJobStatus)
+using PrintJobStatus = SmartPrint.Core.Models.PrintJobStatus;
 
 namespace SmartPrint.App.Services;
 
@@ -94,48 +107,81 @@ public class PrintEngine : IPrintEngine
     {
         await Task.Run(() =>
         {
-            try
+            Exception? error = null;
+            // Use STA thread for WPF printing
+            var thread = new Thread(() =>
             {
-                using var pd = new PrintDocument();
-                pd.PrinterSettings.PrinterName = job.SelectedPrinterName;
-                pd.PrinterSettings.Copies = (short)job.Copies;
-                pd.DefaultPageSettings.Color = job.IsColor;
-                pd.DefaultPageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
-
-                pd.QueryPageSettings += (s, e) =>
+                try
                 {
-                    e.PageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
-                };
+                    using var server = new LocalPrintServer();
+                    var queue = server.GetPrintQueue(job.SelectedPrinterName);
 
-                using var img = Image.FromFile(job.FilePath);
+                    // Create and configure Ticket
+                    var ticket = queue.UserPrintTicket ?? queue.DefaultPrintTicket;
+                    ticket.PageOrientation = job.Orientation == PrintOrientation.Landscape
+                        ? PageOrientation.Landscape
+                        : PageOrientation.Portrait;
+                    ticket.CopyCount = job.Copies;
+                    ticket.OutputColor = job.IsColor ? OutputColor.Color : OutputColor.Monochrome;
 
-                pd.PrintPage += (s, e) =>
+                    // Get Capabilities to determine page size
+                    var caps = queue.GetPrintCapabilities(ticket);
+
+                    // Determine canvas size from media size or fallback (A4 approx in 96dpi)
+                    double pageWidth = caps.OrientedPageMediaWidth ?? 816;
+                    double pageHeight = caps.OrientedPageMediaHeight ?? 1056;
+
+                    // Load Image
+                    var bitmap = new BitmapImage();
+                    bitmap.BeginInit();
+                    bitmap.CacheOption = BitmapCacheOption.OnLoad;
+                    bitmap.UriSource = new Uri(job.FilePath);
+                    bitmap.EndInit();
+                    bitmap.Freeze();
+
+                    // Create Visuals
+                    var fixedDoc = new FixedDocument();
+                    var fixedPage = new FixedPage();
+                    fixedPage.Width = pageWidth;
+                    fixedPage.Height = pageHeight;
+
+                    // Set Page Size on Document
+                    fixedDoc.DocumentPaginator.PageSize = new System.Windows.Size(pageWidth, pageHeight);
+
+                    var image = new WpfImage();
+                    image.Source = bitmap;
+                    image.Stretch = Stretch.Uniform;
+
+                    // Use ImageableArea if available to avoid margins clipping, otherwise center on full page
+                    // For simplicity and robustness (as margins vary), we use full page and Uniform stretch.
+                    image.Width = pageWidth;
+                    image.Height = pageHeight;
+
+                    fixedPage.Children.Add(image);
+
+                    var pageContent = new PageContent();
+                    ((IAddChild)pageContent).AddChild(fixedPage);
+                    fixedDoc.Pages.Add(pageContent);
+
+                    // Print
+                    var writer = PrintQueue.CreateXpsDocumentWriter(queue);
+
+                    // IMPORTANT: Pass the ticket to ensure orientation and settings are respected
+                    writer.Write(fixedDoc.DocumentPaginator, ticket);
+                }
+                catch (Exception ex)
                 {
-                    var m = e.MarginBounds;
+                    error = ex;
+                }
+            });
 
-                    if (m.Width > 0 && m.Height > 0)
-                    {
-                         float ratio = Math.Min((float)m.Width / img.Width, (float)m.Height / img.Height);
-                         int width = (int)(img.Width * ratio);
-                         int height = (int)(img.Height * ratio);
+            thread.SetApartmentState(ApartmentState.STA);
+            thread.Start();
+            thread.Join();
 
-                         int x = m.Left + (m.Width - width) / 2;
-                         int y = m.Top + (m.Height - height) / 2;
-
-                         e.Graphics.DrawImage(img, x, y, width, height);
-                    }
-                    else
-                    {
-                        e.Graphics.DrawImage(img, 0, 0);
-                    }
-                    e.HasMorePages = false;
-                };
-
-                pd.Print();
-            }
-            catch (Exception ex)
+            if (error != null)
             {
-                throw new Exception($"Image Print Error: {ex.Message}", ex);
+                throw new Exception($"Image Print Error: {error.Message}", error);
             }
         });
     }
