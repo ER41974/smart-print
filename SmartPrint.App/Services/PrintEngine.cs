@@ -64,6 +64,7 @@ public class PrintEngine : IPrintEngine
 
                 printDocument.PrinterSettings.PrinterName = job.SelectedPrinterName;
                 printDocument.PrinterSettings.Copies = (short)job.Copies;
+                printDocument.DefaultPageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
 
                 if (job.IsColor)
                 {
@@ -93,6 +94,7 @@ public class PrintEngine : IPrintEngine
                 pd.PrinterSettings.PrinterName = job.SelectedPrinterName;
                 pd.PrinterSettings.Copies = (short)job.Copies;
                 pd.DefaultPageSettings.Color = job.IsColor;
+                pd.DefaultPageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
 
                 using var img = Image.FromFile(job.FilePath);
 
@@ -198,6 +200,14 @@ public class PrintEngine : IPrintEngine
                 Encoding: 0,
                 Visible: true
             );
+
+            // Set Orientation
+            try
+            {
+                // wdOrientPortrait = 0, wdOrientLandscape = 1
+                doc.PageSetup.Orientation = job.Orientation == PrintOrientation.Landscape ? 1 : 0;
+            }
+            catch { }
 
             // Activate to ensure it's the active window for printing focus
             try { doc.Activate(); } catch { }

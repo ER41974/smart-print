@@ -103,6 +103,22 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
+                <!-- Orientation -->
+                <DataGridTemplateColumn Header="{x:Static resx:Strings.Orientation}" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding Source={helpers:EnumBindingSource {x:Type models:PrintOrientation}}}"
+                                      SelectedItem="{Binding Orientation}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource EnumConverter}}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
                 <DataGridTextColumn Header="{x:Static resx:Strings.Status}" Binding="{Binding Status, Converter={StaticResource EnumConverter}}" IsReadOnly="True" Width="100"/>
                 <DataGridTextColumn Header="Message" Binding="{Binding StatusMessage}" IsReadOnly="True" Width="*"/>
             </DataGrid.Columns>

@@ -23,3 +23,9 @@ public enum FileType
     Image,
     Office
 }
+
+public enum PrintOrientation
+{
+    Portrait,
+    Landscape
+}

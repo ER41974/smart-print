@@ -69,6 +69,9 @@
   <data name="Quality" xml:space="preserve">
     <value>Quality</value>
   </data>
+  <data name="Orientation" xml:space="preserve">
+    <value>Orientation</value>
+  </data>
   <data name="Status" xml:space="preserve">
     <value>Status</value>
   </data>
@@ -125,6 +128,8 @@
   <data name="PrintJobStatus_Printing" xml:space="preserve"><value>Printing</value></data>
   <data name="PrintJobStatus_Completed" xml:space="preserve"><value>Completed</value></data>
   <data name="PrintJobStatus_Error" xml:space="preserve"><value>Error</value></data>
+  <data name="PrintOrientation_Portrait" xml:space="preserve"><value>Portrait</value></data>
+  <data name="PrintOrientation_Landscape" xml:space="preserve"><value>Landscape</value></data>
   <data name="WordPrintFailed" xml:space="preserve"><value>Word printing failed: {0}</value></data>
   <data name="WordPrintSuggestion" xml:space="preserve"><value>Please check that Microsoft Word is installed and no dialog boxes are open.</value></data>
   <data name="OfficeNotInstalled" xml:space="preserve"><value>Microsoft Office is not installed or not detected.</value></data>

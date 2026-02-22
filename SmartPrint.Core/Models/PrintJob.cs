@@ -27,6 +27,9 @@ public partial class PrintJob : ObservableObject
     private PrintQuality quality = PrintQuality.Default;
 
     [ObservableProperty]
+    private PrintOrientation orientation = PrintOrientation.Portrait;
+
+    [ObservableProperty]
     private string? selectedPrinterName;
 
     [ObservableProperty]

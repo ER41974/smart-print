@@ -23,6 +23,7 @@ public class Strings
     public static string Copies => Get("Copies");
     public static string Color => Get("Color");
     public static string Quality => Get("Quality");
+    public static string Orientation => Get("Orientation");
     public static string Status => Get("Status");
     public static string Apply => Get("Apply");
     public static string Cancel => Get("Cancel");
