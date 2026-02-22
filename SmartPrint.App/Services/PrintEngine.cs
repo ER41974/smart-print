@@ -66,6 +66,12 @@ public class PrintEngine : IPrintEngine
                 printDocument.PrinterSettings.Copies = (short)job.Copies;
                 printDocument.DefaultPageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
 
+                // Force orientation on each page via QueryPageSettings event
+                printDocument.QueryPageSettings += (s, e) =>
+                {
+                    e.PageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
+                };
+
                 if (job.IsColor)
                 {
                     printDocument.DefaultPageSettings.Color = true;
