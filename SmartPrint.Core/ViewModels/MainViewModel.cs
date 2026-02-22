@@ -97,6 +97,7 @@ public partial class MainViewModel : ObservableObject
                 job.Copies = SelectedJob.Copies;
                 job.IsColor = SelectedJob.IsColor;
                 job.Quality = SelectedJob.Quality;
+                job.Orientation = SelectedJob.Orientation;
             }
         }
     }

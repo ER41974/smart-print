@@ -57,5 +57,6 @@ public class QueueService : IQueueService
         job.Copies = _settingsService.Settings.DefaultCopies;
         job.IsColor = _settingsService.Settings.DefaultColor;
         job.Quality = _settingsService.Settings.DefaultQuality;
+        job.Orientation = PrintOrientation.Portrait;
     }
 }
