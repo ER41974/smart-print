@@ -108,7 +108,6 @@ public class PrintEngine : IPrintEngine
         await Task.Run(() =>
         {
             Exception? error = null;
-            // Use STA thread for WPF printing
             var thread = new Thread(() =>
             {
                 try
@@ -116,22 +115,31 @@ public class PrintEngine : IPrintEngine
                     using var server = new LocalPrintServer();
                     var queue = server.GetPrintQueue(job.SelectedPrinterName);
 
-                    // Create and configure Ticket
-                    var ticket = queue.UserPrintTicket ?? queue.DefaultPrintTicket;
+                    // Clone du ticket pour éviter de corrompre le profil de l'imprimante
+                    var defaultTicket = queue.UserPrintTicket ?? queue.DefaultPrintTicket;
+                    var ticket = defaultTicket.Clone();
+
                     ticket.PageOrientation = job.Orientation == PrintOrientation.Landscape
                         ? PageOrientation.Landscape
                         : PageOrientation.Portrait;
                     ticket.CopyCount = job.Copies;
                     ticket.OutputColor = job.IsColor ? OutputColor.Color : OutputColor.Monochrome;
 
-                    // Get Capabilities to determine page size
                     var caps = queue.GetPrintCapabilities(ticket);
 
-                    // Determine canvas size from media size or fallback (A4 approx in 96dpi)
                     double pageWidth = caps.OrientedPageMediaWidth ?? 816;
                     double pageHeight = caps.OrientedPageMediaHeight ?? 1056;
 
-                    // Load Image
+                    // Forcer l'inversion des dimensions selon l'orientation désirée
+                    if (job.Orientation == PrintOrientation.Landscape && pageWidth < pageHeight)
+                    {
+                        (pageWidth, pageHeight) = (pageHeight, pageWidth);
+                    }
+                    else if (job.Orientation == PrintOrientation.Portrait && pageWidth > pageHeight)
+                    {
+                        (pageWidth, pageHeight) = (pageHeight, pageWidth);
+                    }
+
                     var bitmap = new BitmapImage();
                     bitmap.BeginInit();
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
@@ -139,23 +147,22 @@ public class PrintEngine : IPrintEngine
                     bitmap.EndInit();
                     bitmap.Freeze();
 
-                    // Create Visuals
                     var fixedDoc = new FixedDocument();
-                    var fixedPage = new FixedPage();
-                    fixedPage.Width = pageWidth;
-                    fixedPage.Height = pageHeight;
+                    var fixedPage = new FixedPage
+                    {
+                        Width = pageWidth,
+                        Height = pageHeight
+                    };
 
-                    // Set Page Size on Document
                     fixedDoc.DocumentPaginator.PageSize = new System.Windows.Size(pageWidth, pageHeight);
 
-                    var image = new WpfImage();
-                    image.Source = bitmap;
-                    image.Stretch = Stretch.Uniform;
-
-                    // Use ImageableArea if available to avoid margins clipping, otherwise center on full page
-                    // For simplicity and robustness (as margins vary), we use full page and Uniform stretch.
-                    image.Width = pageWidth;
-                    image.Height = pageHeight;
+                    var image = new System.Windows.Controls.Image
+                    {
+                        Source = bitmap,
+                        Stretch = Stretch.Uniform,
+                        Width = pageWidth,
+                        Height = pageHeight
+                    };
 
                     fixedPage.Children.Add(image);
 
@@ -163,10 +170,7 @@ public class PrintEngine : IPrintEngine
                     ((IAddChild)pageContent).AddChild(fixedPage);
                     fixedDoc.Pages.Add(pageContent);
 
-                    // Print
                     var writer = PrintQueue.CreateXpsDocumentWriter(queue);
-
-                    // IMPORTANT: Pass the ticket to ensure orientation and settings are respected
                     writer.Write(fixedDoc.DocumentPaginator, ticket);
                 }
                 catch (Exception ex)
