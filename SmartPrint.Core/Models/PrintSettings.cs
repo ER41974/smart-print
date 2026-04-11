@@ -17,6 +17,9 @@ public partial class PrintSettings : ObservableObject
     private PrintQuality defaultQuality = PrintQuality.Default;
 
     [ObservableProperty]
+    private PrintDuplex defaultDuplex = PrintDuplex.OneSided;
+
+    [ObservableProperty]
     private string language = "en";
 
     [ObservableProperty]

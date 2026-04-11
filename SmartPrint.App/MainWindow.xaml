@@ -103,6 +103,23 @@
                     </DataGridTemplateColumn.CellTemplate>
                 </DataGridTemplateColumn>
 
+
+                <!-- Duplex -->
+                <DataGridTemplateColumn Header="{x:Static resx:Strings.Duplex}" Width="100">
+                    <DataGridTemplateColumn.CellTemplate>
+                        <DataTemplate>
+                            <ComboBox ItemsSource="{Binding Source={helpers:EnumBindingSource {x:Type models:PrintDuplex}}}"
+                                      SelectedItem="{Binding Duplex}">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Converter={StaticResource EnumConverter}}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </DataTemplate>
+                    </DataGridTemplateColumn.CellTemplate>
+                </DataGridTemplateColumn>
+
                 <!-- Orientation -->
                 <DataGridTemplateColumn Header="{x:Static resx:Strings.Orientation}" Width="100">
                     <DataGridTemplateColumn.CellTemplate>

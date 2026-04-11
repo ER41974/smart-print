@@ -29,3 +29,10 @@ public enum PrintOrientation
     Portrait,
     Landscape
 }
+
+public enum PrintDuplex
+{
+    OneSided,
+    TwoSidedLongEdge,
+    TwoSidedShortEdge
+}
