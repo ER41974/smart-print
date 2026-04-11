@@ -31,7 +31,8 @@ public class QueueService : IQueueService
                 SelectedPrinterName = _settingsService.Settings.DefaultPrinter,
                 Copies = _settingsService.Settings.DefaultCopies,
                 IsColor = _settingsService.Settings.DefaultColor,
-                Quality = _settingsService.Settings.DefaultQuality
+                Quality = _settingsService.Settings.DefaultQuality,
+                Duplex = _settingsService.Settings.DefaultDuplex
             };
 
             Queue.Add(job);
@@ -58,5 +59,6 @@ public class QueueService : IQueueService
         job.IsColor = _settingsService.Settings.DefaultColor;
         job.Quality = _settingsService.Settings.DefaultQuality;
         job.Orientation = PrintOrientation.Portrait;
+        job.Duplex = _settingsService.Settings.DefaultDuplex;
     }
 }

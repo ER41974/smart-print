@@ -30,6 +30,9 @@ public partial class PrintJob : ObservableObject
     private PrintOrientation orientation = PrintOrientation.Portrait;
 
     [ObservableProperty]
+    private PrintDuplex duplex = PrintDuplex.OneSided;
+
+    [ObservableProperty]
     private string? selectedPrinterName;
 
     [ObservableProperty]

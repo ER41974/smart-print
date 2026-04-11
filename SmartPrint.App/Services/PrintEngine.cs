@@ -77,6 +77,18 @@ public class PrintEngine : IPrintEngine
 
                 printDocument.PrinterSettings.PrinterName = job.SelectedPrinterName;
                 printDocument.PrinterSettings.Copies = (short)job.Copies;
+
+                // Add Duplex logic with capability checking
+                if (printDocument.PrinterSettings.CanDuplex)
+                {
+                    if (job.Duplex == PrintDuplex.TwoSidedLongEdge)
+                        printDocument.PrinterSettings.Duplex = Duplex.Vertical;
+                    else if (job.Duplex == PrintDuplex.TwoSidedShortEdge)
+                        printDocument.PrinterSettings.Duplex = Duplex.Horizontal;
+                    else
+                        printDocument.PrinterSettings.Duplex = Duplex.Simplex;
+                }
+
                 printDocument.DefaultPageSettings.Landscape = job.Orientation == PrintOrientation.Landscape;
 
                 // Force orientation on each page via QueryPageSettings event
@@ -125,6 +137,15 @@ public class PrintEngine : IPrintEngine
                     ticket.CopyCount = job.Copies;
                     ticket.OutputColor = job.IsColor ? OutputColor.Color : OutputColor.Monochrome;
 
+                    var capsBase = queue.GetPrintCapabilities();
+
+                    if (capsBase.DuplexingCapability.Contains(Duplexing.TwoSidedLongEdge) && job.Duplex == PrintDuplex.TwoSidedLongEdge)
+                        ticket.Duplexing = Duplexing.TwoSidedLongEdge;
+                    else if (capsBase.DuplexingCapability.Contains(Duplexing.TwoSidedShortEdge) && job.Duplex == PrintDuplex.TwoSidedShortEdge)
+                        ticket.Duplexing = Duplexing.TwoSidedShortEdge;
+                    else
+                        ticket.Duplexing = Duplexing.OneSided;
+
                     var caps = queue.GetPrintCapabilities(ticket);
 
                     double pageWidth = caps.OrientedPageMediaWidth ?? 816;
@@ -142,10 +163,28 @@ public class PrintEngine : IPrintEngine
 
                     var bitmap = new BitmapImage();
                     bitmap.BeginInit();
+                    bitmap.CreateOptions = BitmapCreateOptions.IgnoreColorProfile;
                     bitmap.CacheOption = BitmapCacheOption.OnLoad;
                     bitmap.UriSource = new Uri(job.FilePath);
                     bitmap.EndInit();
                     bitmap.Freeze();
+
+                    ImageSource imageSource = bitmap;
+
+                    // Auto-rotate image to match requested orientation
+                    bool isImageLandscape = bitmap.PixelWidth > bitmap.PixelHeight;
+                    bool isRequestedLandscape = job.Orientation == PrintOrientation.Landscape;
+
+                    if (isImageLandscape != isRequestedLandscape)
+                    {
+                        var transformed = new TransformedBitmap();
+                        transformed.BeginInit();
+                        transformed.Source = bitmap;
+                        transformed.Transform = new RotateTransform(90);
+                        transformed.EndInit();
+                        transformed.Freeze();
+                        imageSource = transformed;
+                    }
 
                     var fixedDoc = new FixedDocument();
                     var fixedPage = new FixedPage
@@ -158,11 +197,15 @@ public class PrintEngine : IPrintEngine
 
                     var image = new System.Windows.Controls.Image
                     {
-                        Source = bitmap,
+                        Source = imageSource,
                         Stretch = Stretch.Uniform,
                         Width = pageWidth,
                         Height = pageHeight
                     };
+
+                    fixedDoc.DocumentPaginator.PageSize = new System.Windows.Size(pageWidth, pageHeight);
+
+
 
                     fixedPage.Children.Add(image);
 
@@ -278,6 +321,10 @@ public class PrintEngine : IPrintEngine
 
             // Print
             // Background: false IS CRITICAL to wait for completion
+
+            // Setting active printer duplex capabilities programmatically through Word COM
+            // is not reliable without interacting with the OS print queue defaults.
+            // As a fallback, we send it to the selected printer. Word will use the default printer properties.
             doc.PrintOut(
                 Background: false,
                 Append: false,

@@ -130,6 +130,10 @@
   <data name="PrintJobStatus_Error" xml:space="preserve"><value>Error</value></data>
   <data name="PrintOrientation_Portrait" xml:space="preserve"><value>Portrait</value></data>
   <data name="PrintOrientation_Landscape" xml:space="preserve"><value>Landscape</value></data>
+  <data name="Duplex" xml:space="preserve"><value>Duplex</value></data>
+  <data name="PrintDuplex_OneSided" xml:space="preserve"><value>One-Sided</value></data>
+  <data name="PrintDuplex_TwoSidedLongEdge" xml:space="preserve"><value>Two-Sided (Long Edge)</value></data>
+  <data name="PrintDuplex_TwoSidedShortEdge" xml:space="preserve"><value>Two-Sided (Short Edge)</value></data>
   <data name="WordPrintFailed" xml:space="preserve"><value>Word printing failed: {0}</value></data>
   <data name="WordPrintSuggestion" xml:space="preserve"><value>Please check that Microsoft Word is installed and no dialog boxes are open.</value></data>
   <data name="OfficeNotInstalled" xml:space="preserve"><value>Microsoft Office is not installed or not detected.</value></data>
